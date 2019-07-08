@@ -27,7 +27,7 @@ public class UserLoadBalance implements LoadBalance {
 
     private volatile static Map<String, InvokerInfo> invokerMap;
 
-    public static void setLastTime(String key, long time) {
+    public static synchronized void setLastTime(String key, long time) {
         InvokerInfo invokerInfo = invokerMap.get(key);
         invokerInfo.setLastTime(time);
         invokerMap.put(key, invokerInfo);
