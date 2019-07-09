@@ -52,7 +52,7 @@ public class UserLoadBalance implements LoadBalance {
                             invokerMap.put(key, new InvokerInfo(invoker, 620, new AtomicInteger()));
                         } else if (key.contains("medium")) {
                             invokerMap.put(key, new InvokerInfo(invoker, 420, new AtomicInteger()));
-                        } else if (key.contains("medium")) {
+                        } else if (key.contains("small")) {
                             invokerMap.put(key, new InvokerInfo(invoker, 170, new AtomicInteger()));
                         }
                     }
