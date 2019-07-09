@@ -18,15 +18,10 @@ public class TestClientFilter implements Filter {
     @Override
     public Result invoke(Invoker<?> invoker, Invocation invocation) throws RpcException {
         try {
-            long startTime = System.currentTimeMillis();
-            RpcInvocation rpcInvocation = (RpcInvocation) invocation;
-            rpcInvocation.setAttachment(START_TIME, String.valueOf(startTime));
-
             Result result = invoker.invoke(invocation);
             return result;
         } catch (Exception e) {
-            String key = invoker.getUrl().toIdentityString();
-            UserLoadBalance.setLastTime(key, Long.MAX_VALUE);
+
             throw e;
         }
 
@@ -34,10 +29,6 @@ public class TestClientFilter implements Filter {
 
     @Override
     public Result onResponse(Result result, Invoker<?> invoker, Invocation invocation) {
-        long startTime = Long.parseLong(invocation.getAttachment(START_TIME));
-        long endTime = System.currentTimeMillis();
-        String key = invoker.getUrl().toIdentityString();
-        UserLoadBalance.setLastTime(key, endTime - startTime);
         return result;
     }
 }
