@@ -30,11 +30,19 @@ public class UserLoadBalance implements LoadBalance {
     }
 
     public static void addActive(String key) {
-        invokerMap.get(key).getCur().incrementAndGet();
+        InvokerInfo invokerInfo = invokerMap.get(key);
+        if (invokerInfo != null) {
+            invokerInfo.getCur().incrementAndGet();
+        }
+
     }
 
     public static void subActive(String key) {
-        invokerMap.get(key).getCur().decrementAndGet();
+        InvokerInfo invokerInfo = invokerMap.get(key);
+        if (invokerInfo != null) {
+            invokerInfo.getCur().decrementAndGet();
+        }
+
     }
 
     @SuppressWarnings("unchecked")
@@ -48,11 +56,11 @@ public class UserLoadBalance implements LoadBalance {
                         invokerMap = new ConcurrentHashMap<>(7);
                         System.out.println(invoker.getUrl().toIdentityString());
                         String key = invoker.getUrl().toIdentityString();
-                        if (key.contains("large")) {
+                        if (key.contains("large") || key.contains("20890")) {
                             invokerMap.put(key, new InvokerInfo(invoker, 620, new AtomicInteger()));
-                        } else if (key.contains("medium")) {
+                        } else if (key.contains("medium") || key.contains("20870")) {
                             invokerMap.put(key, new InvokerInfo(invoker, 420, new AtomicInteger()));
-                        } else if (key.contains("small")) {
+                        } else if (key.contains("small") || key.contains("20880")) {
                             invokerMap.put(key, new InvokerInfo(invoker, 170, new AtomicInteger()));
                         }
                     }
