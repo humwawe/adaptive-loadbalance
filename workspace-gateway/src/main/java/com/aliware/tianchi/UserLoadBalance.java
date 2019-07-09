@@ -30,7 +30,7 @@ public class UserLoadBalance implements LoadBalance {
     public static synchronized void setLastTime(String key, long time) {
         InvokerInfo invokerInfo = invokerMap.get(key);
         invokerInfo.setLastTime(time);
-        invokerMap.put(key, invokerInfo);
+        // invokerMap.put(key, invokerInfo);
     }
 
     @SuppressWarnings("unchecked")
