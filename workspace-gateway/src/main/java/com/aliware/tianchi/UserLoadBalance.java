@@ -24,7 +24,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class UserLoadBalance implements LoadBalance {
 
 
-    private volatile static Map<String, InvokerInfo> invokerMap;
+    private volatile static Map<String, InvokerInfo> invokerMap = new ConcurrentHashMap<>(7);
 
     public static void setLastTime(String key, long time) {
     }
@@ -48,12 +48,11 @@ public class UserLoadBalance implements LoadBalance {
     @SuppressWarnings("unchecked")
     @Override
     public <T> Invoker<T> select(List<Invoker<T>> invokers, URL url, Invocation invocation) throws RpcException {
-        if (invokerMap == null) {
+        if (invokerMap.isEmpty()) {
             synchronized (UserLoadBalance.class) {
-                if (invokerMap == null) {
+                if (invokerMap.isEmpty()) {
                     System.out.println("init");
                     for (Invoker<T> invoker : invokers) {
-                        invokerMap = new ConcurrentHashMap<>(7);
                         System.out.println(invoker.getUrl().toIdentityString());
                         String key = invoker.getUrl().toIdentityString();
                         if (key.contains("large") || key.contains("20890")) {

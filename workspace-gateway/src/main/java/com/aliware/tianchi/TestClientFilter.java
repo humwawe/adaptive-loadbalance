@@ -13,12 +13,12 @@ import org.apache.dubbo.rpc.*;
  */
 @Activate(group = Constants.CONSUMER)
 public class TestClientFilter implements Filter {
-    private static final String START_TIME = "start_time";
 
     @Override
     public Result invoke(Invoker<?> invoker, Invocation invocation) throws RpcException {
         try {
             String key = invoker.getUrl().toIdentityString();
+            System.out.println(key);
             UserLoadBalance.addActive(key);
             Result result = invoker.invoke(invocation);
             return result;
