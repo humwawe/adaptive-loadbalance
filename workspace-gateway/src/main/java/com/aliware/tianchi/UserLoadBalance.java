@@ -8,6 +8,10 @@ import org.apache.dubbo.rpc.RpcStatus;
 import org.apache.dubbo.rpc.cluster.LoadBalance;
 
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ThreadLocalRandom;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * @author daofeng.xjf
@@ -20,20 +24,68 @@ import java.util.List;
 public class UserLoadBalance implements LoadBalance {
 
 
+    private volatile static Map<String, InvokerInfo> invokerMap;
+
+    public static void setLastTime(String key, long time) {
+    }
+
+    public static void addActive(String key) {
+        invokerMap.get(key).getCur().incrementAndGet();
+    }
+
+    public static void subActive(String key) {
+        invokerMap.get(key).getCur().decrementAndGet();
+    }
+
+    @SuppressWarnings("unchecked")
     @Override
     public <T> Invoker<T> select(List<Invoker<T>> invokers, URL url, Invocation invocation) throws RpcException {
-
-        int leastActive = RpcStatus.getStatus(invokers.get(0).getUrl(), invocation.getMethodName()).getActive();
-        int leastActiveIdx = 0;
-        for (int i = 1; i < invokers.size() - 1; i++) {
-            int active = RpcStatus.getStatus(invokers.get(i).getUrl(), invocation.getMethodName()).getActive();
-            if (active < leastActive) {
-                leastActive = active;
-                leastActiveIdx = i;
+        if (invokerMap == null) {
+            synchronized (UserLoadBalance.class) {
+                if (invokerMap == null) {
+                    System.out.println("init");
+                    for (Invoker<T> invoker : invokers) {
+                        invokerMap = new ConcurrentHashMap<>(7);
+                        System.out.println(invoker.getUrl().toIdentityString());
+                        String key = invoker.getUrl().toIdentityString();
+                        if (key.contains("large")) {
+                            invokerMap.put(key, new InvokerInfo(invoker, 620, new AtomicInteger()));
+                        } else if (key.contains("medium")) {
+                            invokerMap.put(key, new InvokerInfo(invoker, 420, new AtomicInteger()));
+                        } else if (key.contains("medium")) {
+                            invokerMap.put(key, new InvokerInfo(invoker, 170, new AtomicInteger()));
+                        }
+                    }
+                    System.out.println(invokerMap.values());
+                }
             }
         }
-        return invokers.get(leastActiveIdx);
+        Invoker retInvoker = getMinValue(invokerMap);
+        if (retInvoker != null) {
+            return (Invoker<T>) retInvoker;
+        }
+        return invokers.get(ThreadLocalRandom.current().nextInt(invokers.size()));
 
+
+//        Invoker<T> tInvoker = invokers.get());
+//        Invoker<T> tInvoker = invokers.get(0);
+//        System.out.println(RpcStatus.getStatus(tInvoker.getUrl(), invocation.getMethodName()).getActive());
+//        RpcContext.getContext().getUrls();
+//        return tInvoker;
+
+    }
+
+    private Invoker getMinValue(Map<String, InvokerInfo> invokerMap) {
+        int tmp = 0;
+        Invoker tmpInvoker = null;
+        for (InvokerInfo invokerInfo : invokerMap.values()) {
+            int available = invokerInfo.getMax() - invokerInfo.getCur().get();
+            if (tmp < available) {
+                tmp = available;
+                tmpInvoker = invokerInfo.getInvoker();
+            }
+        }
+        return tmpInvoker;
     }
 
 }

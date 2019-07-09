@@ -18,10 +18,11 @@ public class TestClientFilter implements Filter {
     @Override
     public Result invoke(Invoker<?> invoker, Invocation invocation) throws RpcException {
         try {
+            String key = invoker.getUrl().toIdentityString();
+            UserLoadBalance.addActive(key);
             Result result = invoker.invoke(invocation);
             return result;
         } catch (Exception e) {
-
             throw e;
         }
 
@@ -29,6 +30,8 @@ public class TestClientFilter implements Filter {
 
     @Override
     public Result onResponse(Result result, Invoker<?> invoker, Invocation invocation) {
+        String key = invoker.getUrl().toIdentityString();
+        UserLoadBalance.subActive(key);
         return result;
     }
 }
