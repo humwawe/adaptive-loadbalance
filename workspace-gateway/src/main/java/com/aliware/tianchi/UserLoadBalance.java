@@ -56,11 +56,11 @@ public class UserLoadBalance implements LoadBalance {
                         System.out.println(invoker.getUrl().toIdentityString());
                         String key = invoker.getUrl().toIdentityString();
                         if (key.contains("large") || key.contains("20890")) {
-                            invokerMap.put(key, new InvokerInfo(invoker, 620, new AtomicInteger()));
+                            invokerMap.put(key, new InvokerInfo(invoker, 650, new AtomicInteger()));
                         } else if (key.contains("medium") || key.contains("20870")) {
-                            invokerMap.put(key, new InvokerInfo(invoker, 420, new AtomicInteger()));
+                            invokerMap.put(key, new InvokerInfo(invoker, 450, new AtomicInteger()));
                         } else if (key.contains("small") || key.contains("20880")) {
-                            invokerMap.put(key, new InvokerInfo(invoker, 170, new AtomicInteger()));
+                            invokerMap.put(key, new InvokerInfo(invoker, 200, new AtomicInteger()));
                         }
                     }
                     System.out.println(invokerMap.values());
