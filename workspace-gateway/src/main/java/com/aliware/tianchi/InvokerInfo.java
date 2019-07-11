@@ -38,9 +38,9 @@ public class InvokerInfo {
     }
 
 
-    public InvokerInfo(Invoker invoker, int max, AtomicInteger cur) {
+    public InvokerInfo(Invoker invoker, AtomicInteger cur) {
         this.invoker = invoker;
-        this.max = max;
+        this.max = 200;
         this.cur = cur;
     }
 

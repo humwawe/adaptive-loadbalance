@@ -8,6 +8,7 @@ import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * @author daofeng.xjf
@@ -18,6 +19,8 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class CallbackServiceImpl implements CallbackService {
 
+    private final AtomicBoolean sendMaxThread = new AtomicBoolean(false);
+
     public CallbackServiceImpl() {
         timer.schedule(new TimerTask() {
             @Override
@@ -25,7 +28,11 @@ public class CallbackServiceImpl implements CallbackService {
                 if (!listeners.isEmpty()) {
                     for (Map.Entry<String, CallbackListener> entry : listeners.entrySet()) {
                         try {
-                            entry.getValue().receiveServerMsg(System.getProperty("quota") + " " + new Date().toString());
+                            if (!sendMaxThread.get()) {
+                                if (sendMaxThread.compareAndSet(false, true)) {
+                                    entry.getValue().receiveServerMsg(ThreadInfo.getMap().toString());
+                                }
+                            }
                         } catch (Throwable t1) {
                             listeners.remove(entry.getKey());
                         }
@@ -37,6 +44,7 @@ public class CallbackServiceImpl implements CallbackService {
 
     private Timer timer = new Timer();
 
+
     /**
      * key: listener type
      * value: callback listener
@@ -46,6 +54,6 @@ public class CallbackServiceImpl implements CallbackService {
     @Override
     public void addListener(String key, CallbackListener listener) {
         listeners.put(key, listener);
-        listener.receiveServerMsg(new Date().toString()); // send notification for change
+        listener.receiveServerMsg(new Date().toString());
     }
 }

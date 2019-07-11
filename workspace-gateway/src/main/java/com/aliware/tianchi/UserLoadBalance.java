@@ -24,10 +24,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class UserLoadBalance implements LoadBalance {
 
 
-    private volatile static Map<String, InvokerInfo> invokerMap = new ConcurrentHashMap<>(7);
+    private volatile static Map<String, InvokerInfo> invokerMap = new ConcurrentHashMap<>(5);
 
-    public static void setLastTime(String key, long time) {
-    }
 
     public static void addActive(String key) {
         InvokerInfo invokerInfo = invokerMap.get(key);
@@ -42,7 +40,10 @@ public class UserLoadBalance implements LoadBalance {
         if (invokerInfo != null) {
             invokerInfo.getCur().decrementAndGet();
         }
+    }
 
+    public static void setMaxThread(String key, int value) {
+        invokerMap.get(key).setMax(value);
     }
 
     @SuppressWarnings("unchecked")
@@ -55,15 +56,8 @@ public class UserLoadBalance implements LoadBalance {
                     for (Invoker<T> invoker : invokers) {
                         System.out.println(invoker.getUrl().toIdentityString());
                         String key = invoker.getUrl().toIdentityString();
-                        if (key.contains("large") || key.contains("20890")) {
-                            invokerMap.put(key, new InvokerInfo(invoker, 650, new AtomicInteger()));
-                        } else if (key.contains("medium") || key.contains("20870")) {
-                            invokerMap.put(key, new InvokerInfo(invoker, 450, new AtomicInteger()));
-                        } else if (key.contains("small") || key.contains("20880")) {
-                            invokerMap.put(key, new InvokerInfo(invoker, 200, new AtomicInteger()));
-                        }
+                        invokerMap.put(key, new InvokerInfo(invoker, new AtomicInteger()));
                     }
-                    System.out.println(invokerMap.values());
                 }
             }
         }
@@ -72,13 +66,6 @@ public class UserLoadBalance implements LoadBalance {
             return (Invoker<T>) retInvoker;
         }
         return invokers.get(ThreadLocalRandom.current().nextInt(invokers.size()));
-
-
-//        Invoker<T> tInvoker = invokers.get());
-//        Invoker<T> tInvoker = invokers.get(0);
-//        System.out.println(RpcStatus.getStatus(tInvoker.getUrl(), invocation.getMethodName()).getActive());
-//        RpcContext.getContext().getUrls();
-//        return tInvoker;
 
     }
 

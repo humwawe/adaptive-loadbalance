@@ -18,7 +18,6 @@ public class TestClientFilter implements Filter {
     public Result invoke(Invoker<?> invoker, Invocation invocation) throws RpcException {
         try {
             String key = invoker.getUrl().toIdentityString();
-            System.out.println(key);
             UserLoadBalance.addActive(key);
             Result result = invoker.invoke(invocation);
             return result;
