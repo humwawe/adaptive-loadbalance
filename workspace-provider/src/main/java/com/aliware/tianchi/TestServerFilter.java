@@ -27,7 +27,7 @@ public class TestServerFilter implements Filter {
             if (!init.get()) {
                 if (init.compareAndSet(false, true)) {
                     int threads = invoker.getUrl().getParameter(Constants.THREADS_KEY, Constants.DEFAULT_THREADS);
-                    ThreadInfo.addProviderMaxThread(invoker.getUrl().toIdentityString(), threads);
+                    ThreadInfo.addProviderMaxThread(invoker.getUrl().getPort(), threads);
                 }
             }
             Result result = invoker.invoke(invocation);

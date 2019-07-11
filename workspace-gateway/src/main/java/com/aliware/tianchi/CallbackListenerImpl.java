@@ -16,7 +16,7 @@ public class CallbackListenerImpl implements CallbackListener {
         int len = msg.length();
         int index = msg.indexOf('=');
         if (index != -1) {
-            String key = msg.substring(1, index);
+            int key = Integer.valueOf(msg.substring(1, index));
             int value = Integer.valueOf(msg.substring(index + 1, len - 1));
             System.out.println(key + "  " + value);
             UserLoadBalance.setMaxThread(key, value);

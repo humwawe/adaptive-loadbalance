@@ -24,10 +24,10 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class UserLoadBalance implements LoadBalance {
 
 
-    private volatile static Map<String, InvokerInfo> invokerMap = new ConcurrentHashMap<>(5);
+    private volatile static Map<Integer, InvokerInfo> invokerMap = new ConcurrentHashMap<>(5);
 
 
-    public static void addActive(String key) {
+    public static void addActive(int key) {
         InvokerInfo invokerInfo = invokerMap.get(key);
         if (invokerInfo != null) {
             invokerInfo.getCur().incrementAndGet();
@@ -35,14 +35,14 @@ public class UserLoadBalance implements LoadBalance {
 
     }
 
-    public static void subActive(String key) {
+    public static void subActive(int key) {
         InvokerInfo invokerInfo = invokerMap.get(key);
         if (invokerInfo != null) {
             invokerInfo.getCur().decrementAndGet();
         }
     }
 
-    public static void setMaxThread(String key, int value) {
+    public static void setMaxThread(int key, int value) {
         invokerMap.get(key).setMax(value);
     }
 
@@ -55,7 +55,7 @@ public class UserLoadBalance implements LoadBalance {
                     System.out.println("init");
                     for (Invoker<T> invoker : invokers) {
                         System.out.println(invoker.getUrl().toIdentityString());
-                        String key = invoker.getUrl().toIdentityString();
+                        int key = invoker.getUrl().getPort();
                         invokerMap.put(key, new InvokerInfo(invoker, new AtomicInteger()));
                     }
                 }
@@ -69,7 +69,7 @@ public class UserLoadBalance implements LoadBalance {
 
     }
 
-    private Invoker getMinValue(Map<String, InvokerInfo> invokerMap) {
+    private Invoker getMinValue(Map<Integer, InvokerInfo> invokerMap) {
         int tmp = 0;
         Invoker tmpInvoker = null;
         for (InvokerInfo invokerInfo : invokerMap.values()) {
