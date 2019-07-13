@@ -10,7 +10,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class InvokerInfo {
     private Invoker invoker;
     private volatile int max;
-//    private AtomicInteger cur;
+    private AtomicInteger cur;
 
     public int getMax() {
         return max;
@@ -20,13 +20,13 @@ public class InvokerInfo {
         this.max = max;
     }
 
-//    public AtomicInteger getCur() {
-//        return cur;
-//    }
+    public AtomicInteger getCur() {
+        return cur;
+    }
 
-//    public void setCur(AtomicInteger cur) {
-//        this.cur = cur;
-//    }
+    public void setCur(AtomicInteger cur) {
+        this.cur = cur;
+    }
 
     public Invoker getInvoker() {
 
@@ -38,10 +38,10 @@ public class InvokerInfo {
     }
 
 
-    public InvokerInfo(Invoker invoker) {
+    public InvokerInfo(Invoker invoker, AtomicInteger cur) {
         this.invoker = invoker;
         this.max = 200;
-//        this.cur = cur;
+        this.cur = cur;
     }
 
     @Override
@@ -49,7 +49,7 @@ public class InvokerInfo {
         return "InvokerInfo{" +
                 "invoker=" + invoker +
                 ", max=" + max +
-//                ", cur=" + cur +
+                ", cur=" + cur +
                 '}';
     }
 }

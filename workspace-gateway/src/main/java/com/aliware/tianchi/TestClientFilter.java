@@ -17,8 +17,8 @@ public class TestClientFilter implements Filter {
     @Override
     public Result invoke(Invoker<?> invoker, Invocation invocation) throws RpcException {
         try {
-//            int key = invoker.getUrl().getPort();
-//            UserLoadBalance.addActive(key);
+            int key = invoker.getUrl().getPort();
+            UserLoadBalance.addActive(key);
             Result result = invoker.invoke(invocation);
             return result;
         } catch (Exception e) {
@@ -29,8 +29,8 @@ public class TestClientFilter implements Filter {
 
     @Override
     public Result onResponse(Result result, Invoker<?> invoker, Invocation invocation) {
-//        int key = invoker.getUrl().getPort();
-//        UserLoadBalance.subActive(key);
+        int key = invoker.getUrl().getPort();
+        UserLoadBalance.subActive(key);
         return result;
     }
 }
