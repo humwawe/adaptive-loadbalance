@@ -25,25 +25,26 @@ public class UserLoadBalance implements LoadBalance {
 
 
     private volatile static Map<Integer, InvokerInfo> invokerMap = new ConcurrentHashMap<>(5);
+    private volatile static int totalWeight = 600;
 
+//    public static void addActive(int key) {
+//        InvokerInfo invokerInfo = invokerMap.get(key);
+//        if (invokerInfo != null) {
+//            invokerInfo.getCur().incrementAndGet();
+//        }
+//
+//    }
+//
+//    public static void subActive(int key) {
+//        InvokerInfo invokerInfo = invokerMap.get(key);
+//        if (invokerInfo != null) {
+//            invokerInfo.getCur().decrementAndGet();
+//        }
+//    }
 
-    public static void addActive(int key) {
-        InvokerInfo invokerInfo = invokerMap.get(key);
-        if (invokerInfo != null) {
-            invokerInfo.getCur().incrementAndGet();
-        }
-
-    }
-
-    public static void subActive(int key) {
-        InvokerInfo invokerInfo = invokerMap.get(key);
-        if (invokerInfo != null) {
-            invokerInfo.getCur().decrementAndGet();
-        }
-    }
-
-    public static void setMaxThread(int key, int value) {
+    public synchronized static void setMaxThread(int key, int value) {
         invokerMap.get(key).setMax(value);
+        totalWeight += value - 200;
     }
 
     @SuppressWarnings("unchecked")
@@ -56,7 +57,7 @@ public class UserLoadBalance implements LoadBalance {
                     for (Invoker<T> invoker : invokers) {
                         System.out.println(invoker.getUrl().toIdentityString());
                         int key = invoker.getUrl().getPort();
-                        invokerMap.put(key, new InvokerInfo(invoker, new AtomicInteger()));
+                        invokerMap.put(key, new InvokerInfo(invoker));
                     }
                 }
             }
@@ -70,16 +71,28 @@ public class UserLoadBalance implements LoadBalance {
     }
 
     private Invoker getMinValue(Map<Integer, InvokerInfo> invokerMap) {
-        int tmp = 0;
-        Invoker tmpInvoker = null;
+        System.out.println(totalWeight);
+        int offset = ThreadLocalRandom.current().nextInt(totalWeight);
         for (InvokerInfo invokerInfo : invokerMap.values()) {
-            int available = invokerInfo.getMax() - invokerInfo.getCur().get();
-            if (tmp < available) {
-                tmp = available;
-                tmpInvoker = invokerInfo.getInvoker();
+            offset -= invokerInfo.getMax();
+            if (offset < 0) {
+                return invokerInfo.getInvoker();
             }
         }
-        return tmpInvoker;
+        return null;
     }
+
+//    private Invoker getMinValue(Map<Integer, InvokerInfo> invokerMap) {
+//        int tmp = 0;
+//        Invoker tmpInvoker = null;
+//        for (InvokerInfo invokerInfo : invokerMap.values()) {
+//            int available = invokerInfo.getMax() - invokerInfo.getCur().get();
+//            if (tmp < available) {
+//                tmp = available;
+//                tmpInvoker = invokerInfo.getInvoker();
+//            }
+//        }
+//        return tmpInvoker;
+//    }
 
 }
