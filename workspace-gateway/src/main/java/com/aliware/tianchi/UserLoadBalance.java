@@ -95,15 +95,21 @@ public class UserLoadBalance implements LoadBalance {
 //    }
 
     private Invoker getMinValue(InvokerInfo[] invokerArray){
-         int a1 = invokerArray[20870].getMax() - invokerArray[20870].getCur().get();
-         int a2 = invokerArray[20880].getMax() - invokerArray[20880].getCur().get();
-         int a3 = invokerArray[20890].getMax() - invokerArray[20890].getCur().get();
+         int a1 = invokerArray[20870] != null ? invokerArray[20870].getMax() - invokerArray[20870].getCur().get() : Integer.MAX_VALUE;
+         int a2 = invokerArray[20880] != null ? invokerArray[20880].getMax() - invokerArray[20880].getCur().get() : Integer.MAX_VALUE;
+         int a3 = invokerArray[20890] != null ? invokerArray[20890].getMax() - invokerArray[20890].getCur().get() : Integer.MAX_VALUE;
+         InvokerInfo min = null;
          if(a1 <=  a2 && a1 <= a3){
-             return invokerArray[20870].getInvoker();
+             min = invokerArray[20870];
          }else if(a2 <= a1 && a2 <= a3){
-             return invokerArray[20880].getInvoker();
+             min = invokerArray[20880];
          }else{
-             return invokerArray[20890].getInvoker();
+             min = invokerArray[20890];
+         }
+         if(min != null){
+             return min.getInvoker();
+         }else{
+             return null;
          }
     }
 
