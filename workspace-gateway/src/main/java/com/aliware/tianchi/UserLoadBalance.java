@@ -29,8 +29,9 @@ public class UserLoadBalance implements LoadBalance {
     //    private volatile static int totalWeight = 600;
 
     public static void addActive(int key) {
-        if(invokerArray[key] != null){
-            invokerArray[key].getCur().incrementAndGet();
+        InvokerInfo invokerInfo = invokerArray[key];
+        if (invokerInfo != null) {
+            invokerInfo.getCur().incrementAndGet();
         }
 //        InvokerInfo invokerInfo = invokerMap.get(key);
 //        if (invokerInfo != null) {
@@ -40,8 +41,9 @@ public class UserLoadBalance implements LoadBalance {
     }
 
     public static void subActive(int key) {
-        if(invokerArray[key] != null){
-            invokerArray[key].getCur().decrementAndGet();
+        InvokerInfo invokerInfo = invokerArray[key];
+        if (invokerInfo != null) {
+            invokerInfo.getCur().decrementAndGet();
         }
 //        InvokerInfo invokerInfo = invokerMap.get(key);
 //        if (invokerInfo != null) {
@@ -95,16 +97,20 @@ public class UserLoadBalance implements LoadBalance {
 //    }
 
     private Invoker getMinValue(InvokerInfo[] invokerArray){
-         int a1 = invokerArray[20870] != null ? invokerArray[20870].getMax() - invokerArray[20870].getCur().get() : Integer.MAX_VALUE;
-         int a2 = invokerArray[20880] != null ? invokerArray[20880].getMax() - invokerArray[20880].getCur().get() : Integer.MAX_VALUE;
-         int a3 = invokerArray[20890] != null ? invokerArray[20890].getMax() - invokerArray[20890].getCur().get() : Integer.MAX_VALUE;
+         InvokerInfo info1 = invokerArray[20870];
+         InvokerInfo info2 = invokerArray[20880];
+         InvokerInfo info3 = invokerArray[20880];
+
+         int a1 = info1 != null ? info1.getMax() - info1.getCur().get() : Integer.MAX_VALUE;
+         int a2 = info2 != null ? info2.getMax() - info2.getCur().get() : Integer.MAX_VALUE;
+         int a3 = info3 != null ? info3.getMax() - info3.getCur().get() : Integer.MAX_VALUE;
          InvokerInfo min = null;
          if(a1 <=  a2 && a1 <= a3){
-             min = invokerArray[20870];
+             min = info1;
          }else if(a2 <= a1 && a2 <= a3){
-             min = invokerArray[20880];
+             min = info2;
          }else{
-             min = invokerArray[20890];
+             min = info3;
          }
          if(min != null){
              return min.getInvoker();
