@@ -24,44 +24,57 @@ public class UserLoadBalance implements LoadBalance {
 
 
     private volatile static Map<Integer, InvokerInfo> invokerMap = new ConcurrentHashMap<>(5);
-//    private volatile static int totalWeight = 600;
+    private volatile static InvokerInfo[] invokerArray = new InvokerInfo[65536];
+
+    //    private volatile static int totalWeight = 600;
 
     public static void addActive(int key) {
-        InvokerInfo invokerInfo = invokerMap.get(key);
-        if (invokerInfo != null) {
-            invokerInfo.getCur().incrementAndGet();
+        if(invokerArray[key] != null){
+            invokerArray[key].getCur().incrementAndGet();
         }
+//        InvokerInfo invokerInfo = invokerMap.get(key);
+//        if (invokerInfo != null) {
+//            invokerInfo.getCur().incrementAndGet();
+//        }
 
     }
 
     public static void subActive(int key) {
-        InvokerInfo invokerInfo = invokerMap.get(key);
-        if (invokerInfo != null) {
-            invokerInfo.getCur().decrementAndGet();
+        if(invokerArray[key] != null){
+            invokerArray[key].getCur().decrementAndGet();
         }
+//        InvokerInfo invokerInfo = invokerMap.get(key);
+//        if (invokerInfo != null) {
+//            invokerInfo.getCur().decrementAndGet();
+//        }
     }
 
     public synchronized static void setMaxThread(int key, int value) {
-        invokerMap.get(key).setMax(value);
+        invokerArray[key].setMax(value);
+ //       invokerMap.get(key).setMax(value);
 //        totalWeight += value - 200;
     }
 
     @SuppressWarnings("unchecked")
     @Override
     public <T> Invoker<T> select(List<Invoker<T>> invokers, URL url, Invocation invocation) throws RpcException {
-        if (invokerMap.isEmpty()) {
+        if (invokerArray == null) {
             synchronized (UserLoadBalance.class) {
-                if (invokerMap.isEmpty()) {
+                if (invokerArray == null) {
                     System.out.println("init");
                     for (Invoker<T> invoker : invokers) {
                         System.out.println(invoker.getUrl().toIdentityString());
                         int key = invoker.getUrl().getPort();
-                        invokerMap.put(key, new InvokerInfo(invoker, new AtomicInteger()));
+                        invokerArray[key] = new InvokerInfo(invoker, new AtomicInteger());
+//                        invokerMap.put(key, new InvokerInfo(invoker, new AtomicInteger()));
                     }
                 }
             }
         }
-        Invoker retInvoker = getMinValue(invokerMap);
+//        Invoker retInvoker = getMinValue(invokerMap);
+
+        Invoker retInvoker = getMinValue(invokerArray);
+
         if (retInvoker != null) {
             return (Invoker<T>) retInvoker;
         }
@@ -80,6 +93,19 @@ public class UserLoadBalance implements LoadBalance {
 //        }
 //        return null;
 //    }
+
+    private Invoker getMinValue(InvokerInfo[] invokerArray){
+         int a1 = invokerArray[20870].getMax() - invokerArray[20870].getCur().get();
+         int a2 = invokerArray[20880].getMax() - invokerArray[20880].getCur().get();
+         int a3 = invokerArray[20890].getMax() - invokerArray[20890].getCur().get();
+         if(a1 <=  a2 && a1 <= a3){
+             return invokerArray[20870].getInvoker();
+         }else if(a2 <= a1 && a2 <= a3){
+             return invokerArray[20880].getInvoker();
+         }else{
+             return invokerArray[20890].getInvoker();
+         }
+    }
 
     private Invoker getMinValue(Map<Integer, InvokerInfo> invokerMap) {
         int tmp = 0;
