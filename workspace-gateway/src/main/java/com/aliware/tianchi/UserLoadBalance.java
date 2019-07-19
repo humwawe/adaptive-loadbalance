@@ -54,7 +54,6 @@ public class UserLoadBalance implements LoadBalance {
                 if (invokerMap.isEmpty()) {
                     System.out.println("init");
                     for (Invoker<T> invoker : invokers) {
-                        System.out.println(invoker.getUrl().toIdentityString());
                         int key = invoker.getUrl().getPort();
                         invokerMap.put(key, new InvokerInfo(invoker, new AtomicInteger()));
                     }
